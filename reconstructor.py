@@ -1,45 +1,12 @@
-from subprocess import call
+import json
 import os
+import re
 import sys
 from os import path
-from types import *
-import re
 from string import Template
-import json
-
-
-
-#stuff
-skip_folder = []
-root_dir = sys.argv[1] if 1 in sys.argv and path.exists(sys.argv[1]) else "./"
-ini_dir = sys.argv[2] if 2 in sys.argv and path.exists(sys.argv[2]) else path.join(root_dir, "project.ini")
-
-
-def main():
-    rec = Reconstructor()
-    rec.project_ini = rec.load_project_ini(ini_dir)
-
-
-
-
-        #PRE CONDITIONS
-        current_project_path = path.join(root_dir, project_folder)
-        rec.root_dir = current_project_path
-
-        print("currently working on " + current_project_path)
-
-        # ext_conf["database_path"] = path.join(current_project_path,database_name)
-        # ext_conf["image_path"] = path.join(current_project_path,image_folder_name)
-        #rec.execute_step("feature_extractor")
-        #rec.execute_step("exhaustive_matcher")
-        #rec.execute_step("mapper")
-        #rec.execute_step("image_undistorter")
-        rec.execute_step("dense_stereo")
-        rec.execute_step("dense_fuser")
-        rec.create_statistics()
-
-
-
+from subprocess import call
+from types import *
+from pprint import pprint
 
 
 class Reconstructor:
@@ -51,7 +18,7 @@ class Reconstructor:
 
     @property
     def logging_path(self):
-        return self.project_ini[no_category]["log_path"] if "log_path" in self.project_ini["no_category"] else path.join(root_dir, "log")
+        return self.project_ini[no_category]["log_path"] if "log_path" in self.project_ini["no_category"] else path.join(self.root_dir, "log")
 
     @logging_path.setter
     def logging_path(self, path):
@@ -74,6 +41,7 @@ class Reconstructor:
 
         elif step == "mapper":
             tconfig.update(self.project_ini["Mapper"])
+            pprint(tconfig)
             tconfig["export_path"] = Template(self.project_ini["no_category"]["no_category.export_path"]).safe_substitute(project=self.root_dir)
             tconfig["database_path"] = Template(self.project_ini["no_category"]["no_category.database_path"]).safe_substitute(project=self.root_dir)
             tconfig["image_path"] = Template(self.project_ini["no_category"]["no_category.image_path"]).safe_substitute(project=self.root_dir)
@@ -111,22 +79,23 @@ class Reconstructor:
             if not path.exists(logging_path):
                 call(["mkdir", logging_path])
 
-            # print ("\n\n\n##################################")
-            # for i in range(0, len(options),2):
-            #     print(options[i] + " = " + options[i+1])
-            #
-            # print ("##################################\n\n\n")
+            print ("\n\n\n##################################")
+            for i in range(0, len(options),2):
+                print(options[i] + " = " + options[i+1])
+            print ("##################################\n\n\n")
             with open(path.join(logging_path, step), "wb") as log:
                 call(options, stdout=log)
         else:
             raise Exception("Wrong Argument!")
 
     def create_statistics(self):
-        with open(path.join(self.root_dir, 'project_configuration.json'), 'w') as outfile:
-            json.dump(data, outfile,  ensure_ascii=False)
-        if path.exists(path.join(self.root_dir, "sparse", "0")):
+        sparse_path = path.join(Template(self.project_ini["no_category"]["no_category.export_path"]).safe_substitute(project=self.root_dir), "0")
+        # with open(path.join(self.root_dir, 'project_configuration.json'), 'w') as outfile:
+        #     json.dump(data, outfile,  ensure_ascii=False)
+        print(sparse_path)
+        if path.exists(sparse_path):
             with open(path.join(self.root_dir, self.name + "_" + "statistics.json"), 'w') as outfile:
-                call(["colmap", "model_analyzer", "project_path", path.join(self.root_dir, "sparse", "0")], stdout=outfile)
+                call(["colmap", "model_analyzer", "--path", sparse_path] , stdout=outfile)
 
     @staticmethod
     def load_project_ini(file_path):

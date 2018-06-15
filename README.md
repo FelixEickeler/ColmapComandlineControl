@@ -14,7 +14,7 @@ python ColmapCommandlineControl/main.py --path [path to folder] --step 111 --ini
 Following options are available:
 
 | Option        | Argument      | Explaination  |
-| ------------- |:-------------:| -----:|
+| ------------- |:------------- | :-----|
 | --recursive      | None              | Takes multiple folder with the same structure and walks over each one for a reconstruction |
 | --path           | [path to folder]  |   Path to the root directory. If recursive is not active it should be the root folder of the project that you want to reconstruct |
 | --ini_path | [path to ini]      |    Path to the ini file. Please make note that there are some additional lines for the data structure! See the default.ini as an example |

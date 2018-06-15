@@ -7,7 +7,7 @@ from string import Template
 from subprocess import call
 from types import *
 from pprint import pprint
-from steps import Steps
+from steps import Steps, MatchingStrategy
 
 
 class Reconstructor:
@@ -37,9 +37,13 @@ class Reconstructor:
             tconfig["image_path"] = Template(self.project_ini["no_category"]["no_category.image_path"]).safe_substitute(
                 project=self.root_dir)
 
-        elif step == Steps.exhaustive_matcher:
+        elif step == Steps.matcher:
+            if step.matching_strategy is MatchingStrategy.exhaustive_matcher:
+                tconfig.update(self.project_ini["ExhaustiveMatching"])
+            elif step.matching_strategy is MatchingStrategy.sequential_matcher:
+                tconfig.update(self.project_ini["SequentialMatching"])
+
             tconfig.update(self.project_ini["SiftMatching"])
-            tconfig.update(self.project_ini["ExhaustiveMatching"])
             tconfig["database_path"] = Template(
                 self.project_ini["no_category"]["no_category.database_path"]).safe_substitute(project=self.root_dir)
 
@@ -81,26 +85,30 @@ class Reconstructor:
             return None
 
         # add path because will only read if valid
-        options = ["colmap", step]
+        options = ["colmap", step.name()]
+        print(options)
         for key, arg in tconfig.items():
             options += ["--" + key, str(arg)]
         return options
 
     def execute_step(self, step):
-        options = self.build_options(step)
-        if options:
-            logging_path = self.logging_path
-            if not path.exists(logging_path):
-                call(["mkdir", logging_path])
-
-            print("\n\n\n##################################")
-            for i in range(0, len(options), 2):
-                print(options[i] + " = " + options[i + 1])
-            print("##################################\n\n\n")
-            with open(path.join(logging_path, step), "wb") as log:
-                call(options, stdout=log)
+        if step == Steps.create_statistics:
+            self.create_statistics()
         else:
-            raise Exception("Wrong Argument!")
+            options = self.build_options(step)
+            if options:
+                logging_path = self.logging_path
+                if not path.exists(logging_path):
+                    call(["mkdir", logging_path])
+
+                print("\n\n\n##################################")
+                for i in range(0, len(options), 2):
+                    print(options[i] + " = " + options[i + 1])
+                print("##################################\n\n\n")
+                with open(path.join(logging_path, step.name()), "wb") as log:
+                    call(options, stdout=log)
+            else:
+                raise Exception("Wrong Argument!")
 
     def create_statistics(self):
         sparse_path = path.join(
@@ -109,6 +117,10 @@ class Reconstructor:
         if path.exists(sparse_path):
             with open(path.join(self.root_dir, self.name + "_" + "statistics.json"), 'w') as outfile:
                 call(["colmap", "model_analyzer", "--path", sparse_path], stdout=outfile)
+
+    def ReadPrevious(self, file_path):
+        with open(file_path, "r") as bin:
+            return Steps.fromString(bin.readline())
 
     @staticmethod
     def load_project_ini(file_path):
@@ -133,6 +145,3 @@ class Reconstructor:
 
                     config[current][current + "." + arg] = value
             return config
-
-
-if __name__ == "__main__": main()

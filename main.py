@@ -29,7 +29,8 @@ def StartReconstruction(datastore):
         current_project_path = path.join(datastore.root_path, rel_path) if datastore.root_path != "./" else "./"
         reconstructor.root_dir = current_project_path
         print("#" + (cnt + 1).__str__() + "# " + "Working on " + current_project_path)
-        steps = Steps.fromBinaryString(datastore.steps)
+        print(datastore.steps)
+	steps = Steps.fromBinaryString(datastore.steps)
 
         if Steps.matcher in steps :
             matcher_index = steps.index(Steps.matcher)

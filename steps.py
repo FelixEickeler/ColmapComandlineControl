@@ -40,8 +40,8 @@ class Steps(NamedEnum):
     matcher = 2
     mapper = 4
     image_undistorter = 8
-    dense_stereo = 16
-    dense_fuser = 32
+    patch_match_stereo = 16
+    stereo_fusion = 32
     create_statistics = 64
 
     def __init__(self, value):

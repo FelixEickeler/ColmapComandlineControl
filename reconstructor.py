@@ -68,14 +68,14 @@ class Reconstructor:
                 project=self.root_dir)
             call(["mkdir", tconfig["output_path"]])
 
-        elif step == Steps.dense_stereo:  #
-            tconfig.update(self.project_ini["DenseStereo"])
+        elif step == Steps.patch_match_stereo:  #
+            tconfig.update(self.project_ini["PatchMatchStereo"])
             tconfig["workspace_path"] = Template(
                 self.project_ini["no_category"]["no_category.output_path"]).safe_substitute(project=self.root_dir)
             # tconfig["output_path"] = path.join( tconfig["output_path"] ,"0")root_dir
 
-        elif step == Steps.dense_fuser:  #
-            tconfig.update(self.project_ini["DenseFusion"])
+        elif step == Steps.stereo_fusion:  #
+            tconfig.update(self.project_ini["StereoFusion"])
             tconfig["workspace_path"] = Template(
                 self.project_ini["no_category"]["no_category.output_path"]).safe_substitute(project=self.root_dir)
             tconfig["output_path"] = path.join(

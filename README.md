@@ -3,6 +3,9 @@
 # Comandline Script for Automatic Reconstructions with Colmap
 
 This is a small script that helped me doing mulitple reconstructions on a linux headleass machine. I will control colmap over the commandline and parse the "whole" ini-file. In the default ini there should be path added to create your own folder structure. There is log folder provided with the logs of the substeps (tail them for the current process).
+## Dependencies
+Enum needs to be installed:
+pip install enum34 
 
 ## Options
 Usage:
